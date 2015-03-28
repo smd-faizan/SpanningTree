@@ -13,10 +13,10 @@ In the terminal, just go to the project directory and run the following command:
 mvn clean install
 
 =============================================================
-Interference v2.0
+SpanningTree v1.0
 =============================================================
 
-www.cbmc.it/~scardonig/interference/Interference.php
+This app lets you create Spanning tree and All pair Shortest Paths from a given graph in Cytoscape.
 
 TODO
 
@@ -47,5 +47,4 @@ This README would normally document whatever steps are necessary to get your app
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Repo owners : smd.faizan@gmail.com (Faizaan), srikanth.5283@gmail.com (Srikanth Bezawada)
