@@ -218,8 +218,8 @@ public class SpanningTreeThread extends Thread {
         networkManager.addNetwork(SpanningTree);
 
         //Add view to cyto
-        //CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(SpanningTree);
-        //CyActivator.networkViewManager.addNetworkView(myView);
+        CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(SpanningTree);
+        CyActivator.networkViewManager.addNetworkView(myView);
     }
 
     public static void printMatrix(double[][] matrix, String name) {
