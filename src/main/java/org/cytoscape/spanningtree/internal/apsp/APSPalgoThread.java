@@ -118,8 +118,8 @@ public class APSPalgoThread extends Thread {
         networkManager.addNetwork(Floyd);
         
         //Add view to cyto
-        CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(Floyd);
-        CyActivator.networkViewManager.addNetworkView(myView);
+//        CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(Floyd);
+//        CyActivator.networkViewManager.addNetworkView(myView);
     }
 
     public static double[][] createAdjMatrix(CyNetwork currentnetwork, List<CyNode> nodeList, CyTable edgeTable, int totalnodecount) {

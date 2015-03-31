@@ -91,11 +91,11 @@ public class SpanningTreeStartMenu extends javax.swing.JPanel implements CytoPan
         });
 
         buttonGroup2.add(maxRadioButton);
-        maxRadioButton.setText("Maximum");
+        maxRadioButton.setText("Maximal");
 
         buttonGroup2.add(minRadioButton);
         minRadioButton.setSelected(true);
-        minRadioButton.setText("Minimum");
+        minRadioButton.setText("Minimal");
 
         exitButton.setText("Exit");
         exitButton.addActionListener(new java.awt.event.ActionListener() {

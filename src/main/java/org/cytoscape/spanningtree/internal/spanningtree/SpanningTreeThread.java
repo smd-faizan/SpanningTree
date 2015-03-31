@@ -4,11 +4,16 @@
  */
 package org.cytoscape.spanningtree.internal.spanningtree;
 
+import com.sun.org.apache.xalan.internal.xsltc.runtime.BasisLibrary;
 import java.util.ArrayList;
 import java.util.List;
-import org.cytoscape.spanningtree.internal.CyActivator;
 import org.cytoscape.model.*;
+import org.cytoscape.spanningtree.internal.CyActivator;
+import org.cytoscape.spanningtree.internal.visuals.Saloon;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 /**
  *
@@ -43,7 +48,7 @@ public class SpanningTreeThread extends Thread {
             double[][] adjacencyMatrixOfNetwork = createAdjMatrix(currentnetwork, nodeList, edgeTable, totalnodecount, edgeWeightAttribute);
             //printMatrix(adjacencyMatrixOfNetwork, "initail matrix");
             double[][] SpTreeAdjMatrix = createSpTreeAdjMatrix(adjacencyMatrixOfNetwork, nodeList, edgeTable, totalnodecount);
-            //printMatrix(SpTreeAdjMatrix, "first spanning tree");
+            printMatrix(SpTreeAdjMatrix, "first spanning tree");
             createNetwork(SpTreeAdjMatrix, nodeList, nodeTable, totalnodecount);
         } else {
             // alternative sp tree
@@ -73,6 +78,11 @@ public class SpanningTreeThread extends Thread {
     public static double[][] createAdjMatrix(CyNetwork currentnetwork, List<CyNode> nodeList, CyTable edgeTable, int totalnodecount, String edgeWeightAttribute) {
         //make an adjacencymatrix for the current network
         double[][] adjacencyMatrixOfNetwork = new double[totalnodecount][totalnodecount];
+        for (int i = 0; i < totalnodecount; i++) {
+            for (int j = 0; j < totalnodecount; j++) {
+                adjacencyMatrixOfNetwork[i][j] = Integer.MAX_VALUE;
+            }
+        }
         int k = 0;
         for (CyNode root : nodeList) {
             List<CyNode> neighbors = currentnetwork.getNeighborList(root, CyEdge.Type.OUTGOING);
@@ -88,6 +98,7 @@ public class SpanningTreeThread extends Thread {
             }
             k++;
         }
+        printMatrix(adjacencyMatrixOfNetwork, "given matrix");
         return adjacencyMatrixOfNetwork;
     }
 
@@ -105,23 +116,22 @@ public class SpanningTreeThread extends Thread {
             while (noOfEdges < totalnodecount - 1) {
                 Graph myGraphReplica = new Graph(myGraph);
 
-                double minWeight = 32.0;
+                double minWeight = Integer.MAX_VALUE;
                 int vertexi = 0;
                 int vertexj = 0;
                 for (int i = 0; i < totalnodecount; i++) {
                     for (int j = 0; j < totalnodecount; j++) {
-                        if (adjacencyMatrixOfNetwork[i][j] != 0) {
                             if (adjacencyMatrixOfNetwork[i][j] < minWeight) {
                                 minWeight = adjacencyMatrixOfNetwork[i][j];
                                 vertexi = i;
                                 vertexj = j;
                             }
-                        }
                     }
                 }
+                System.out.println("minimum value :"+minWeight+", point"+vertexi+","+vertexj);
                 myGraph.addEdge(vertexi, vertexj);
-                adjacencyMatrixOfNetwork[vertexi][vertexj] = 0.0;
-                if (minWeight == 32.0 && vertexi == 0 && vertexj == 0) {
+                adjacencyMatrixOfNetwork[vertexi][vertexj] = Integer.MAX_VALUE;
+                if (minWeight == Integer.MAX_VALUE) {
                     break;
                 }
                 Cycle myGraphCycle = new Cycle(myGraph);
@@ -135,22 +145,24 @@ public class SpanningTreeThread extends Thread {
             while (noOfEdges < totalnodecount - 1) {
                 Graph myGraphReplica = new Graph(myGraph);
 
-                double maxWeight = 0;
+                double maxWeight = Integer.MIN_VALUE;
                 int vertexi = 0;
                 int vertexj = 0;
                 for (int i = 0; i < totalnodecount; i++) {
                     for (int j = 0; j < totalnodecount; j++) {
+                        if (adjacencyMatrixOfNetwork[i][j] != Integer.MAX_VALUE) {
                         if (adjacencyMatrixOfNetwork[i][j] > maxWeight) {
                             maxWeight = adjacencyMatrixOfNetwork[i][j];
                             vertexi = i;
                             vertexj = j;
                         }
+                        }
                     }
                 }
                 myGraph.addEdge(vertexi, vertexj);
-                adjacencyMatrixOfNetwork[vertexi][vertexj] = 0.0;
+                adjacencyMatrixOfNetwork[vertexi][vertexj] = Integer.MAX_VALUE;
                 //System.out.println("Max weight is "+maxWeight+" at i="+vertexi+", j="+vertexj);
-                if (maxWeight == 0 && vertexi == 0 && vertexj == 0) {
+                if (maxWeight == Integer.MIN_VALUE) {
                     break;
                 }
                 Cycle myGraphCycle = new Cycle(myGraph);
@@ -165,20 +177,25 @@ public class SpanningTreeThread extends Thread {
         adjacencyMatrixOfNetwork = adjacencyMatrixOfNetworkRelpica;
         double[][] adjacencyMatrixOfNewNetwork = new double[totalnodecount][totalnodecount];
         for (int i = 0; i < totalnodecount; i++) {
+            for (int j = 0; j < totalnodecount; j++) {
+                adjacencyMatrixOfNewNetwork[i][j] = Integer.MAX_VALUE;
+            }
+        }
+        for (int i = 0; i < totalnodecount; i++) {
             for (Integer j : myGraph.adj(i)) {
                 adjacencyMatrixOfNewNetwork[i][j] = adjacencyMatrixOfNetwork[i][j];
             }
         }
-        for (int i = 0; i < totalnodecount; i++) {
-            for (int j = i + 1; j < totalnodecount; j++) {
-                if (adjacencyMatrixOfNewNetwork[i][j] > adjacencyMatrixOfNewNetwork[j][i]) {
-                    adjacencyMatrixOfNewNetwork[j][i] = 0.0;
-                } else {
-                    adjacencyMatrixOfNewNetwork[i][j] = 0.0;
-                }
-            }
-        }
-        //printMatrix(adjacencyMatrixOfNewNetwork, "inside");
+//        for (int i = 0; i < totalnodecount; i++) {
+//            for (int j = i + 1; j < totalnodecount; j++) {
+//                if (adjacencyMatrixOfNewNetwork[i][j] > adjacencyMatrixOfNewNetwork[j][i]) {
+//                    adjacencyMatrixOfNewNetwork[j][i] = 0.0;
+//                } else {
+//                    adjacencyMatrixOfNewNetwork[i][j] = 0.0;
+//                }
+//            }
+//        }
+        printMatrix(adjacencyMatrixOfNewNetwork, "spanning tree matrix");
         return adjacencyMatrixOfNewNetwork;
     }
 
@@ -203,9 +220,9 @@ public class SpanningTreeThread extends Thread {
         }
         //add edges
         for (int i = 0; i < totalnodecount; i++) {
-            for (int j = i + 1; j < totalnodecount; j++) {
-                double maxi = Math.max(adjacencyMatrixOfNewNetwork[i][j], adjacencyMatrixOfNewNetwork[j][i]);
-                if (maxi > 0.0) {
+            for (int j = 0; j < totalnodecount; j++) {
+                double maxi = adjacencyMatrixOfNewNetwork[i][j];
+                if (maxi > Integer.MIN_VALUE && maxi < Integer.MAX_VALUE) {
                     CyEdge root = SpanningTree.addEdge(nodesInNewNetwork.get(i), nodesInNewNetwork.get(j), true);
                     CyRow row = SpanningTree.getDefaultEdgeTable().getRow(root.getSUID());
                     row.set(edgeWeightAttribute, "" + maxi);
@@ -216,10 +233,13 @@ public class SpanningTreeThread extends Thread {
         // Add the network to Cytoscape
         CyNetworkManager networkManager = CyActivator.networkManager;
         networkManager.addNetwork(SpanningTree);
-
+        
         //Add view to cyto
-        CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(SpanningTree);
-        CyActivator.networkViewManager.addNetworkView(myView);
+//        CyNetworkView myView = CyActivator.networkViewFactory.createNetworkView(SpanningTree);
+//        CyActivator.networkViewManager.addNetworkView(myView);
+        
+        // Apply Style
+//        Saloon.applyStyle(myView);
     }
 
     public static void printMatrix(double[][] matrix, String name) {

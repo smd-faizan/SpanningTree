@@ -9,6 +9,9 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -21,7 +24,12 @@ public class CyActivator extends AbstractCyActivator {
     public static CyNetworkManager networkManager;
     public static CyNetworkViewFactory networkViewFactory;
     public static CyNetworkViewManager networkViewManager;
-
+    public static VisualStyleFactory visualStyleFactoryServiceRef;
+    public static VisualMappingFunctionFactory vmfFactoryP;
+    public static VisualMappingManager vmmServiceRef;
+    public static VisualMappingFunctionFactory vmfFactoryC;
+    public static VisualMappingFunctionFactory vmfFactoryD;
+    
     @Override
     public void start(BundleContext context) throws Exception {
         String version = new String("1.0");
@@ -32,6 +40,12 @@ public class CyActivator extends AbstractCyActivator {
         this.cyApplicationManager = getService(context, CyApplicationManager.class);
         this.cyDesktopService = getService(context, CySwingApplication.class);
         this.cyServiceRegistrar = getService(context, CyServiceRegistrar.class);
+        this.visualStyleFactoryServiceRef = getService(context,VisualStyleFactory.class);
+        this.vmfFactoryP = getService(context,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+        this.vmmServiceRef = getService(context,VisualMappingManager.class);
+        this.vmfFactoryC = getService(context,VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+        this.vmfFactoryD = getService(context,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+  
         menuaction = new SpanningTreeMenuAction(cyApplicationManager, "SpanningTree " + version, this);
         Properties properties = new Properties();
         registerAllServices(context, menuaction, properties);

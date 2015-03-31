@@ -196,7 +196,7 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="buttonGroup2"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Maximum"/>
+                    <Property name="text" type="java.lang.String" value="Maximal"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="minRadioButton">
@@ -205,7 +205,7 @@
                       <ComponentRef name="buttonGroup2"/>
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Minimum"/>
+                    <Property name="text" type="java.lang.String" value="Minimal"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="exitButton">
