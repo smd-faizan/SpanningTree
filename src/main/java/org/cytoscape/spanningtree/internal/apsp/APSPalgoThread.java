@@ -27,6 +27,9 @@ public class APSPalgoThread extends Thread {
 
     @Override
     public void run() {
+        long lStartTime = System.currentTimeMillis();
+        System.out.println("Start time for APSP algo: " + lStartTime + " milli seconds");
+    
         currentnetworkview = cyApplicationManager.getCurrentNetworkView();
         currentnetwork = currentnetworkview.getModel();
         List<CyNode> nodeList = currentnetwork.getNodeList();
@@ -41,6 +44,10 @@ public class APSPalgoThread extends Thread {
 
         createNetwork(D, Pi, adjacencyMatrix, nodeList, nodeTable);
 
+	long lEndTime = System.currentTimeMillis();
+	long difference = lEndTime - lStartTime;
+        System.out.println("End time for APSP algo: " + lEndTime + " milli seconds");
+	System.out.println("Execution time for APSP algo: " + difference + " milli seconds");
     }
 
     public static int[][] runFloydAlgo(double[][] D) {

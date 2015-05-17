@@ -303,7 +303,7 @@ public class SpanningTreeStartMenu extends javax.swing.JPanel implements CytoPan
     }
     
     public String inputEdgeAttributeAndValidate(CyTable edgeTable){
-        System.out.println("Waiting for user input of edge name..");
+        //System.out.println("Waiting for user input of edge name..");
         edgeWeightAttribute = JOptionPane.showInputDialog(null, "Enter the Edge Attribute to be used as edge weight for the network (case sensitive).");
         if(edgeWeightAttribute == null || edgeWeightAttribute.equals("")){
             System.out.println("Trying to use 'weight' or distance' or 'CyEdge.INTERACTION' as edge attribute ");
@@ -322,7 +322,7 @@ public class SpanningTreeStartMenu extends javax.swing.JPanel implements CytoPan
             }
         } else {
             if(edgeTable.getColumn(edgeWeightAttribute) != null){
-                System.out.println("using 'CyEdge.INTERACTION' as edge attribute.");
+                System.out.println("using "+edgeWeightAttribute+" as edge attribute.");
                 return edgeWeightAttribute;
             } else{
                 JOptionPane.showMessageDialog(null, " no column with name "+edgeWeightAttribute+" exists. Exiting!", "Spanning Tree", JOptionPane.WARNING_MESSAGE);
