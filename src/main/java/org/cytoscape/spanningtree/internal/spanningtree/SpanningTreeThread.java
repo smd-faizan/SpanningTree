@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.cytoscape.model.*;
 import org.cytoscape.spanningtree.internal.CyActivator;
+import org.cytoscape.spanningtree.internal.SpanningTreeStartMenu;
 import org.cytoscape.spanningtree.internal.visuals.Saloon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -20,24 +21,27 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
  * @author smd.faizan@gmail.com
  */
 public class SpanningTreeThread extends Thread {
-
+    public boolean stop;
     public CyNetwork currentnetwork;
     public CyNetworkView currentnetworkview;
     boolean isAlternative;
     boolean isMinimum;
     String edgeWeightAttribute;
+    SpanningTreeStartMenu menu;
 
-    public SpanningTreeThread(CyNetwork currentnetwork, CyNetworkView currentnetworkview, boolean isAlternative, boolean isMinimum, String edgeWeightAttribute) {
+    public SpanningTreeThread(CyNetwork currentnetwork, CyNetworkView currentnetworkview, boolean isAlternative, boolean isMinimum, String edgeWeightAttribute, SpanningTreeStartMenu menu) {
         this.currentnetwork = currentnetwork;
         this.currentnetworkview = currentnetworkview;
         this.isAlternative = isAlternative;
         this.isMinimum = isMinimum;
         this.edgeWeightAttribute = edgeWeightAttribute;
+        this.menu = menu;
     }
 
     // kruskals algo
     @Override
     public void run() {
+        stop = false;
         long lStartTime = System.currentTimeMillis();
         System.out.println("Strat time for Spanning Tree algo: " + lStartTime + " milli seconds");
 
@@ -50,15 +54,23 @@ public class SpanningTreeThread extends Thread {
             // first spanning tree
             double[][] adjacencyMatrixOfNetwork = createAdjMatrix(currentnetwork, nodeList, edgeTable, totalnodecount, edgeWeightAttribute);
             //printMatrix(adjacencyMatrixOfNetwork, "initail matrix");
+            if(adjacencyMatrixOfNetwork == null)
+                return;
             double[][] SpTreeAdjMatrix = createSpTreeAdjMatrix(adjacencyMatrixOfNetwork, nodeList, edgeTable, totalnodecount);
             //printMatrix(SpTreeAdjMatrix, "first spanning tree");
+            if(SpTreeAdjMatrix == null)
+                return;
             createNetwork(SpTreeAdjMatrix, nodeList, nodeTable, totalnodecount);
         } else {
             // alternative sp tree
             double[][] adjacencyMatrixOfNetwork = createAdjMatrix(currentnetwork, nodeList, edgeTable, totalnodecount, edgeWeightAttribute);
             //printMatrix(adjacencyMatrixOfNetwork, "initail matrix");
+            if(adjacencyMatrixOfNetwork == null)
+                return;
             double[][] SpTreeAdjMatrix = createSpTreeAdjMatrix(adjacencyMatrixOfNetwork, nodeList, edgeTable, totalnodecount);
             //printMatrix(SpTreeAdjMatrix, "first spanning tree");
+            if(SpTreeAdjMatrix == null)
+                return;
             adjacencyMatrixOfNetwork = createAdjMatrix(currentnetwork, nodeList, edgeTable, totalnodecount, edgeWeightAttribute);
             //double[][] adjMatrixRemSPTree = new double[totalnodecount][totalnodecount];
             for (int i = 0; i < totalnodecount; i++) {
@@ -73,6 +85,8 @@ public class SpanningTreeThread extends Thread {
             }
             //Matrix(adjacencyMatrixOfNetwork, "sptree removed matrix");
             SpTreeAdjMatrix = createSpTreeAdjMatrix(adjacencyMatrixOfNetwork, nodeList, edgeTable, totalnodecount);
+            if(SpTreeAdjMatrix == null)
+                return;
             createNetwork(SpTreeAdjMatrix, nodeList, nodeTable, totalnodecount);
         }
 
@@ -80,13 +94,16 @@ public class SpanningTreeThread extends Thread {
 	long difference = lEndTime - lStartTime;
         System.out.println("End time for Spanning Tree algo: " + lEndTime + " milli seconds");
 	System.out.println("Execution time for Spanning tree algo: " + difference +" milli seconds");
+        menu.setStatusLabel("Spanning tree network created in Network panel");
     }
 
-    public static double[][] createAdjMatrix(CyNetwork currentnetwork, List<CyNode> nodeList, CyTable edgeTable, int totalnodecount, String edgeWeightAttribute) {
+    public double[][] createAdjMatrix(CyNetwork currentnetwork, List<CyNode> nodeList, CyTable edgeTable, int totalnodecount, String edgeWeightAttribute) {
         //make an adjacencymatrix for the current network
         double[][] adjacencyMatrixOfNetwork = new double[totalnodecount][totalnodecount];
         for (int i = 0; i < totalnodecount; i++) {
             for (int j = 0; j < totalnodecount; j++) {
+                if(stop)
+                    return null;
                 adjacencyMatrixOfNetwork[i][j] = Integer.MAX_VALUE;
             }
         }
@@ -94,6 +111,8 @@ public class SpanningTreeThread extends Thread {
         for (CyNode root : nodeList) {
             List<CyNode> neighbors = currentnetwork.getNeighborList(root, CyEdge.Type.OUTGOING);
             for (CyNode neighbor : neighbors) {
+                if(stop)
+                    return null;
                 List<CyEdge> edges = currentnetwork.getConnectingEdgeList(root, neighbor, CyEdge.Type.DIRECTED);
                 if (edges.size() > 0) {
                     CyRow row = edgeTable.getRow(edges.get(0).getSUID());
@@ -128,11 +147,13 @@ public class SpanningTreeThread extends Thread {
                 int vertexj = 0;
                 for (int i = 0; i < totalnodecount; i++) {
                     for (int j = 0; j < totalnodecount; j++) {
-                            if (adjacencyMatrixOfNetwork[i][j] < minWeight) {
-                                minWeight = adjacencyMatrixOfNetwork[i][j];
-                                vertexi = i;
-                                vertexj = j;
-                            }
+                        if(stop)
+                            return null;
+                        if (adjacencyMatrixOfNetwork[i][j] < minWeight) {
+                            minWeight = adjacencyMatrixOfNetwork[i][j];
+                            vertexi = i;
+                            vertexj = j;
+                        }
                     }
                 }
                 //System.out.println("minimum value :"+minWeight+", point"+vertexi+","+vertexj);
@@ -157,6 +178,8 @@ public class SpanningTreeThread extends Thread {
                 int vertexj = 0;
                 for (int i = 0; i < totalnodecount; i++) {
                     for (int j = 0; j < totalnodecount; j++) {
+                        if(stop)
+                            return null;
                         if (adjacencyMatrixOfNetwork[i][j] != Integer.MAX_VALUE) {
                         if (adjacencyMatrixOfNetwork[i][j] > maxWeight) {
                             maxWeight = adjacencyMatrixOfNetwork[i][j];
@@ -277,5 +300,9 @@ public class SpanningTreeThread extends Thread {
             }
             System.out.println();
         }
+    }
+    
+    public void end(){
+        stop = true;
     }
 }
